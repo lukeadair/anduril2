@@ -1,5 +1,5 @@
 all:
-	./build-all.sh
+	./build-all.sh $(filter)
 
 clean:
 	rm -f *.hex *~ *.elf *.o
