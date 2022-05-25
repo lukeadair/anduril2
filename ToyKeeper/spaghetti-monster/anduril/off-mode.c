@@ -264,9 +264,15 @@ uint8_t off_state(Event event, uint16_t arg) {
     }
     #endif
     #ifdef USE_MOMENTARY_MODE
-    // 5 clicks: momentary mode
-    else if (event == EV_5clicks) {
-        blink_once();
+	// 6 hold: momentary mode
+    else if (event == EV_click6_hold) {
+		// only respond on first frame
+		if (arg) return EVENT_NOT_HANDLED;
+		blink_once();
+        return MISCHIEF_MANAGED;
+    }
+    // 6 hold: momentary mode
+    else if (event == EV_click6_hold_release) {
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
     }
@@ -330,4 +336,3 @@ uint8_t off_state(Event event, uint16_t arg) {
 
 
 #endif
-

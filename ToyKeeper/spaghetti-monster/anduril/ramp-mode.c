@@ -420,8 +420,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
     #endif  // ifndef USE_TINT_RAMPING
 
     #ifdef USE_MOMENTARY_MODE
-    // 5 clicks: shortcut to momentary mode
-    else if (event == EV_5clicks) {
+	// 6 hold: shortcut to momentary mode
+    else if (event == EV_click6_hold) {
+		// only respond on first frame
+		if (arg) return EVENT_NOT_HANDLED;
+		blink_once();
+        return MISCHIEF_MANAGED;
+    }
+    // 6 hold: shortcut to momentary mode
+    else if (event == EV_click6_hold_release) {
         set_level(0);
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
@@ -645,4 +652,3 @@ void set_level_and_therm_target(uint8_t level) {
 
 
 #endif
-
