@@ -25,7 +25,7 @@
 #ifdef TINT_RAMP_TOGGLE_ONLY
 uint8_t tint_style = 1;
 #else
-uint8_t tint_style = 0;
+uint8_t tint_style = 1;
 #endif
 
 #ifdef USE_MANUAL_MEMORY

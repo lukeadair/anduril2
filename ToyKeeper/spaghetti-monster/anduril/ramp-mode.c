@@ -377,8 +377,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     #endif
 
-    // 3 clicks: toggle smooth vs discrete ramping
-    else if (event == EV_3clicks) {
+    // 6 clicks: toggle smooth vs discrete ramping
+    else if (event == EV_6clicks) {
         ramp_style = !ramp_style;
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
@@ -400,11 +400,17 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     #endif
 
-    #ifndef USE_TINT_RAMPING
     // 3H: momentary turbo (on lights with no tint ramping)
     else if (event == EV_click3_hold) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
-            #ifdef USE_2C_STYLE_CONFIG
+			#ifdef USE_TINT_RAMPING
+				// force tint to be 1 or 254
+				if (tint != 254) { tint = 1; }
+				// invert between 1 and 254
+				tint = tint ^ 0xFF;
+			#endif
+
+			#ifdef USE_2C_STYLE_CONFIG
             uint8_t tl = style_2c ? MAX_LEVEL : turbo_level;
             set_level_and_therm_target(tl);
             #else
@@ -414,10 +420,16 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click3_hold_release) {
+		#ifdef USE_TINT_RAMPING
+			// force tint to be 1 or 254
+			if (tint != 254) { tint = 1; }
+			// invert between 1 and 254
+			tint = tint ^ 0xFF;
+		#endif
+
         set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #endif  // ifndef USE_TINT_RAMPING
 
     #ifdef USE_MOMENTARY_MODE
     // 5 clicks: shortcut to momentary mode
@@ -645,4 +657,3 @@ void set_level_and_therm_target(uint8_t level) {
 
 
 #endif
-
