@@ -244,7 +244,7 @@ void gradual_tick() {
     if (gt < actual_level) gt = actual_level - 1;
     else if (gt > actual_level) gt = actual_level + 1;
 
-    /*
+
     #ifdef LED_ENABLE_PIN_LEVEL_MIN
     // only enable during part of the ramp
     if ((gt >= LED_ENABLE_PIN_LEVEL_MIN)
@@ -253,7 +253,7 @@ void gradual_tick() {
     else  // disable during other parts of the ramp
         LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
     #endif
-    */
+	
 
     gt --;  // convert 1-based number to 0-based
 
