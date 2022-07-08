@@ -29,27 +29,16 @@ inline void set_level_override(uint8_t level) {
     } else {
         level --;
 
-        if (! tint) {  // main LEDs
-            // enable this power channel
-            LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
-            // disable other power channel
-            LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
-            // set levels
-            PWM1_LVL = PWM_GET(pwm1_levels, level);
-            #ifndef K93_NO_FET
-            PWM2_LVL = (uint8_t)(PWM_GET(pwm2_levels, level) >> 2);  // 8 bits
-            #endif
-            PWM3_LVL = 0;
-        } else {  // 2nd LEDs
-            // disable other power channel
-            LED_ENABLE_PORT &= ~(1 << LED_ENABLE_PIN);
-            // enable this power channel
-            LED2_ENABLE_PORT |= (1 << LED2_ENABLE_PIN);
-            // set levels
-            PWM1_LVL = 0;
-            PWM2_LVL = 0;
-            PWM3_LVL = PWM_GET(pwm3_levels, level);
-        }
+        // enable this power channel
+        LED_ENABLE_PORT |= (1 << LED_ENABLE_PIN);
+        // disable other power channel
+        LED2_ENABLE_PORT &= ~(1 << LED2_ENABLE_PIN);
+        // set levels
+        PWM1_LVL = PWM_GET(pwm1_levels, level);
+        #ifndef K93_NO_FET
+        PWM2_LVL = (uint8_t)(PWM_GET(pwm2_levels, level) >> 2);  // 8 bits
+        #endif
+        PWM3_LVL = 0;
     }
 }
 
@@ -66,38 +55,25 @@ void gradual_tick() {
 
     PWM_DATATYPE target;
 
-    if (! tint) {  // main LED channel
-        target = PWM_GET(pwm1_levels, gt);
-        if ((gt < actual_level)     // special case for FET-only turbo
-                && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
-                && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
-        else if (PWM1_LVL < target) PWM1_LVL ++;
-        else if (PWM1_LVL > target) PWM1_LVL --;
+    target = PWM_GET(pwm1_levels, gt);
+    if ((gt < actual_level)     // special case for FET-only turbo
+            && (PWM1_LVL == 0)  // (bypass adjustment period for first step)
+            && (target == PWM_TOP)) PWM1_LVL = PWM_TOP;
+    else if (PWM1_LVL < target) PWM1_LVL ++;
+    else if (PWM1_LVL > target) PWM1_LVL --;
 
-        #ifndef K93_NO_FET  // skip this on E21A model
-        target = PWM_GET(pwm2_levels, gt) >> 2;  // 8 bits, not 10
-        if (PWM2_LVL < target) PWM2_LVL ++;
-        else if (PWM2_LVL > target) PWM2_LVL --;
-        #endif
+    #ifndef K93_NO_FET  // skip this on E21A model
+    target = PWM_GET(pwm2_levels, gt) >> 2;  // 8 bits, not 10
+    if (PWM2_LVL < target) PWM2_LVL ++;
+    else if (PWM2_LVL > target) PWM2_LVL --;
+    #endif
 
-        // did we go far enough to hit the next defined ramp level?
-        // if so, update the main ramp level tracking var
-        if ((PWM1_LVL == PWM_GET(pwm1_levels, gt))
-                #ifndef K93_NO_FET
-                && (PWM2_LVL == (PWM_GET(pwm2_levels, gt) >> 2))
-                #endif
-            )
-        { actual_level = gt + 1; }
-    } else {  // 2nd LED channel
-        target = PWM_GET(pwm3_levels, gt);
-        if (PWM3_LVL < target) PWM3_LVL ++;
-        else if (PWM3_LVL > target) PWM3_LVL --;
-
-        // did we go far enough to hit the next defined ramp level?
-        // if so, update the main ramp level tracking var
-        if ( PWM3_LVL == PWM_GET(pwm3_levels, gt) )
-        { actual_level = gt + 1; }
-    }
-
+    // did we go far enough to hit the next defined ramp level?
+    // if so, update the main ramp level tracking var
+    if ((PWM1_LVL == PWM_GET(pwm1_levels, gt))
+            #ifndef K93_NO_FET
+            && (PWM2_LVL == (PWM_GET(pwm2_levels, gt) >> 2))
+            #endif
+        )
+    { actual_level = gt + 1; }
 }
-
