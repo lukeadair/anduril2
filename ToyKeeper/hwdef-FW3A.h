@@ -4,7 +4,7 @@
 /* BLF/TLF FW3A driver layout
  *           ----
  *   Reset -|1  8|- VCC
- * eswitch -|2  7|- optic nerve
+ * eswitch -|2  7|- AUX LED
  *     FET -|3  6|- 7x7135
  *     GND -|4  5|- 1x7135
  *           ----
@@ -30,12 +30,11 @@
 #define PWM3_LVL OCR1B      // OCR1B is the output compare register for PB4
 #endif
 
-#ifndef VISION_PIN
-#define VISION_PIN PB2      // pin 7, optic nerve
-//#define ADC_CHANNEL 0x01    // MUX 01 corresponds with PB2
-//#define ADC_DIDR    ADC1D   // Digital input disable bit corresponding with PB2
-#endif
 #define ADC_PRSCL   0x07    // clk/128
+
+#ifndef AUXLED_PIN
+#define AUXLED_PIN PB2 // pin 7
+#endif
 
 // average drop across diode on this hardware
 #ifndef VOLTAGE_FUDGE_FACTOR

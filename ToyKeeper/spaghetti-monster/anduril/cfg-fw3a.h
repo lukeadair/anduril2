@@ -14,6 +14,16 @@
 #define HALFSPEED_LEVEL 14
 #define QUARTERSPEED_LEVEL 5
 
+// the button lights up
+#define USE_INDICATOR_LED
+// the aux LEDs are behind the main LEDs
+#ifdef USE_INDICATOR_LED_WHILE_RAMPING
+#undef USE_INDICATOR_LED_WHILE_RAMPING
+#endif
+// enable blinking indicator LED while off
+#define TICK_DURING_STANDBY
+#define STANDBY_TICK_SPEED 3 // every 0.128 s
+
 // safe limit ~20% power
 // 20 40 60 80 100
 #define SIMPLE_UI_FLOOR RAMP_DISCRETE_FLOOR
@@ -25,3 +35,9 @@
 
 // can't reset the normal way because power is connected before the button
 #define USE_SOFT_FACTORY_RESET
+
+// too big, remove stuff to make room
+#undef USE_SOS_MODE
+#undef USE_RAMP_AFTER_MOON_CONFIG
+#undef USE_RAMP_SPEED_CONFIG
+#undef USE_VOLTAGE_CORRECTION
