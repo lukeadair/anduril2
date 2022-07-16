@@ -28,6 +28,7 @@
 
 uint8_t steady_state(Event event, uint16_t arg) {
     static int8_t ramp_direction = 1;
+	static uint8_t prev_tint = 0;
     #if (B_TIMING_OFF == B_RELEASE_T)
     // if the user double clicks, we need to abort turning off,
     // and this stores the level to return to
@@ -60,7 +61,15 @@ uint8_t steady_state(Event event, uint16_t arg) {
         else if (1 == style_2c) turbo_level = MAX_LEVEL;
         else {
             if (memorized_level < mode_max) { turbo_level = mode_max; }
-            else { turbo_level = MAX_LEVEL; }
+            else {
+				turbo_level = MAX_LEVEL;
+				// force top of ramp unless only on tint 1
+				#ifdef USE_TINT_RAMPING
+					if(tint > 1) {
+						turbo_level = mode_max;
+					}
+				#endif
+			 }
         }
     #elif defined(USE_2C_MAX_TURBO)  // Anduril 1 style always
         // simple UI: to/from ceiling
@@ -149,14 +158,22 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
-    #ifdef USE_LOCKOUT_MODE
-    // 4 clicks: shortcut to lockout mode
-    else if (event == EV_4clicks) {
-        set_level(0);
-        set_state(lockout_state, 0);
-        return MISCHIEF_MANAGED;
+    // #ifdef USE_LOCKOUT_MODE
+    // // 4 clicks: shortcut to lockout mode
+    // else if (event == EV_4clicks) {
+    //     set_level(0);
+    //     set_state(lockout_state, 0);
+    //     return MISCHIEF_MANAGED;
+    // }
+    // #endif
+
+	#ifdef USE_TINT_RAMPING
+	// middle tint ramp
+	else if (event == EV_4clicks) {
+        tint = 127;
+		set_level(actual_level);
     }
-    #endif
+	#endif
 
     // hold: change brightness (brighter, dimmer)
     // click, hold: change brightness (dimmer)
@@ -376,8 +393,8 @@ uint8_t steady_state(Event event, uint16_t arg) {
     }
     #endif
 
-    // 3 clicks: toggle smooth vs discrete ramping
-    else if (event == EV_3clicks) {
+    // 5 clicks: toggle smooth vs discrete ramping
+    else if (event == EV_5clicks) {
         ramp_style = !ramp_style;
         save_config();
         #ifdef START_AT_MEMORIZED_LEVEL
@@ -392,23 +409,32 @@ uint8_t steady_state(Event event, uint16_t arg) {
         return MISCHIEF_MANAGED;
     }
 
-    #ifndef USE_TINT_RAMPING
+
     // 3H: momentary turbo (on lights with no tint ramping)
     else if (event == EV_click3_hold) {
         if (! arg) {  // first frame only, to allow thermal regulation to work
+		    #ifdef USE_TINT_RAMPING
+				prev_tint = tint;
+				if(tint <= 127){tint = 254;}
+				else {tint = 1;}
+				set_level(actual_level);
+			#endif
             set_level_and_therm_target(turbo_level);
         }
         return MISCHIEF_MANAGED;
     }
     else if (event == EV_click3_hold_release) {
+		#ifdef USE_TINT_RAMPING
+			tint = prev_tint;
+			set_level(actual_level);
+		#endif
         set_level_and_therm_target(memorized_level);
         return MISCHIEF_MANAGED;
     }
-    #endif  // ifndef USE_TINT_RAMPING
 
     #ifdef USE_MOMENTARY_MODE
-    // 5 clicks: shortcut to momentary mode
-    else if (event == EV_5clicks) {
+    // 6 clicks: shortcut to momentary mode
+    else if (event == EV_6clicks) {
         set_level(0);
         set_state(momentary_state, 0);
         return MISCHIEF_MANAGED;
@@ -625,4 +651,3 @@ void set_level_and_therm_target(uint8_t level) {
 
 
 #endif
-
