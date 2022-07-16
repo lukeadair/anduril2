@@ -22,32 +22,6 @@
 
 #include "tint-ramping.h"
 
-#ifdef TINT_RAMP_TOGGLE_ONLY
-
-uint8_t tint_ramping_state(Event event, uint16_t arg) {
-    // click, click, hold: change the tint
-    if (event == EV_click3_hold) {
-        // toggle once on first frame; ignore other frames
-        if (! arg) {
-            tint = !tint;
-            set_level(actual_level);
-            //blink_once();  // unnecessary, and kind of annoying on moon
-        }
-        return EVENT_HANDLED;
-    }
-
-    // click, click, hold, release: save config
-    else if (event == EV_click3_hold_release) {
-        // remember tint after battery change
-        save_config();
-        return EVENT_HANDLED;
-    }
-
-    return EVENT_NOT_HANDLED;
-}
-
-#else  // no TINT_RAMP_TOGGLE_ONLY
-
 uint8_t tint_ramping_state(Event event, uint16_t arg) {
     static int8_t tint_ramp_direction = 1;
     static uint8_t prev_tint = 0;
@@ -59,8 +33,23 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
     // don't look like they were meant to be here
     static uint8_t active = 0;
 
-    // click, click, hold: change the tint
-    if (event == EV_click3_hold) {
+	// click, click, click: switch tint
+	if(event == EV_3clicks) {
+		if(tint <= 127) {
+			tint = 254;
+			tint_ramp_direction = -1;
+		}
+		else {
+			tint = 1;
+			tint_ramp_direction = 1;
+		}
+		set_level(actual_level);
+
+		// remember tint after battery change
+        save_config();
+	}
+    // click, click, click, hold: change the tint
+    else if (event == EV_click4_hold) {
         // reset at beginning of movement
         if (! arg) {
             active = 1;  // first frame means this is for us
@@ -94,7 +83,7 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
     }
 
     // click, click, hold, release: reverse direction for next ramp
-    else if (event == EV_click3_hold_release) {
+    else if (event == EV_click4_hold_release) {
         active = 0;  // ignore next hold if it wasn't meant for us
         // reverse
         tint_ramp_direction = -tint_ramp_direction;
@@ -108,8 +97,5 @@ uint8_t tint_ramping_state(Event event, uint16_t arg) {
     return EVENT_NOT_HANDLED;
 }
 
-#endif  // ifdef TINT_RAMP_TOGGLE_ONLY
-
 
 #endif
-
