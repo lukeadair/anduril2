@@ -28,6 +28,8 @@
 
 uint8_t off_state(Event event, uint16_t arg) {
 
+	uint8_t mode_max = ramp_ceil;
+
     // turn emitter off when entering state
     if (event == EV_enter_state) {
         set_level(0);
@@ -157,25 +159,22 @@ uint8_t off_state(Event event, uint16_t arg) {
     else if (event == EV_click2_hold) {
         uint8_t turbo_level;  // how bright is "turbo"?
 
-        #if defined(USE_2C_STYLE_CONFIG)  // user can choose 2C behavior
-            uint8_t style_2c = ramp_2c_style;
-            #ifdef USE_SIMPLE_UI
-            // simple UI has its own turbo config
-            if (simple_ui_active) style_2c = ramp_2c_style_simple;
-            #endif
-            // 0  = ceiling
-            // 1+ = full power
-            if (0 == style_2c) turbo_level = nearest_level(MAX_LEVEL);
-            else turbo_level = MAX_LEVEL;
-        #else
-            // simple UI: ceiling
-            // full UI: full power
-            #ifdef USE_SIMPLE_UI
-            if (simple_ui_active) turbo_level = nearest_level(MAX_LEVEL);
-            else
-            #endif
-            turbo_level = MAX_LEVEL;
+        uint8_t style_2c = ramp_2c_style;
+        #ifdef USE_SIMPLE_UI
+        // simple UI has its own turbo config
+        if (simple_ui_active) style_2c = ramp_2c_style_simple;
         #endif
+
+		// force top of ramp unless only on tint 1
+		#ifdef USE_TINT_RAMPING
+			if(tint > 1) {
+				style_2c = 0;
+			}
+		#endif
+        // 0  = ceiling
+        // 1+ = full power
+        if (0 == style_2c) turbo_level = mode_max;
+        else turbo_level = MAX_LEVEL;
 
         set_level(turbo_level);
         return MISCHIEF_MANAGED;
@@ -330,4 +329,3 @@ uint8_t off_state(Event event, uint16_t arg) {
 
 
 #endif
-
