@@ -65,7 +65,7 @@ uint8_t steady_state(Event event, uint16_t arg) {
 				turbo_level = MAX_LEVEL;
 				// force top of ramp unless only on tint 1
 				#ifdef USE_TINT_RAMPING
-					if(tint > 1) {
+					if(tint != 1 && tint != 255) {
 						turbo_level = mode_max;
 					}
 				#endif

@@ -167,7 +167,7 @@ uint8_t off_state(Event event, uint16_t arg) {
 
 		// force top of ramp unless only on tint 1
 		#ifdef USE_TINT_RAMPING
-			if(tint > 1) {
+			if(tint != 1 && tint != 255) {
 				style_2c = 0;
 			}
 		#endif
